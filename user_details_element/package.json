@@ -3,7 +3,7 @@
   "description": "element that captures user details",
   "main": "user-details.js",
   "dependencies": {
-    "@polymer/iron-ajax": "^3.0.0-pre.20",
+    "@polymer/iron-ajax": "^3.0.1",
     "@polymer/polymer": "^3.0.0"
   },
   "devDependencies": {

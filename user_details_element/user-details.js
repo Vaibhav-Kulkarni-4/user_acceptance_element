@@ -1,14 +1,8 @@
 import {html, PolymerElement} from '@polymer/polymer/polymer-element.js';
 import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
+import '@polymer/iron-ajax/iron-ajax.js'
+import '@polymer/iron-ajax/iron-request.js'
 
-/**
- * `user-details`
- * element that captures user details
- *
- * @customElement
- * @polymer
- * @demo demo/index.html
- */
 class UserDetails extends mixinBehaviors([],PolymerElement) {
   static get template() {
     return html`
@@ -17,45 +11,56 @@ class UserDetails extends mixinBehaviors([],PolymerElement) {
           display: block;
         }
       </style>
+
+      <iron-ajax
+
+        id="browserdetails"
+        url="/get_my_ip"
+        method="post"
+        handle-as="string"
+        content-type="application/json"
+        on-response="_handleRes"
+        on-error="_error"
+        with-credentials>
+      </iron-ajax>
+
       <p>Browser Name - [[browserName]]</p>
       <p>Browser Version - [[fullVersion]]</p>
+      <p>Client IP Adress - [[localIPAddress]]</p>
     `;
   }
   static get properties() {
     return {
-      prop1: {
-        type: String,
-        value: 'user-details'
-      },
       user_details: {
         browserName: {
           type: String,
           notify: true
         },
         fullVersion: {
-          type: Int32Array,
+          type: Float64Array,
           notify: true
         },
-        // data:{
-        //   type:Object,
-        //   value:{},
-        //   notify:true
-        // }
+        localIPAddress: {
+          notify: true
+        },
       }
     };
   }
 
-  constructor() {
-    super();
-    {
+  _handleRes(resp) {
+    this.localIPAddress = resp.detail.response;
+    console.log("IP Address - ",this.localIPAddress)
+  }
+
+  ready() {
+    super.ready();
+
+     // console.log(this._root.querySelector('#getOffers'));
       this.nVer = navigator.appVersion;
       this.nAgt = navigator.userAgent;
       this.browserName  = navigator.appName;
       this.fullVersion  = ''+parseFloat(navigator.appVersion);
-      // this.majorVersion = parseInt(navigator.appVersion,10);
       var nameOffset,verOffset,ix;
-
-      console.log("Inside Constructor !!!!!!!!!!!");
 
       // In Opera 15+, the true version is after "OPR/"
       if ((verOffset=this.nAgt.indexOf("OPR/"))!=-1) {
@@ -113,27 +118,19 @@ class UserDetails extends mixinBehaviors([],PolymerElement) {
        this.fullVersion = parseInt(navigator.appVersion,10);
       }
 
-      // let x = {"browser_name":this.browserName,"full_version":this.fullVersion,"major_version":this.fullVersion}
-      // this.set('data',x);
-      // console.log("aaaaaaaaaaa",this.data);
-      // this.fire("data",this.data);
-
       console.log("Browser name - ", this.browserName);
-      console.log("Full version - ", this.fullVersion);
-      console.log("Major version - ", this.fullVersion);
-      console.log("navigator.appNamee - ", navigator.appName);
+      console.log("Browser version - ", this.fullVersion);
       console.log("navigator.userAgent - ", navigator.userAgent);
-    }
+
+      this.$.browserdetails.body = {
+        'browser_name' : this.browserName,
+        'browser_version': this.fullVersion
+      };
+
+      // console.log(this.$.browserdetails)
+      this.$.browserdetails.generateRequest();
   }
-
-  ready() {
-    super.ready(console.log("Into ready method"));
-
-    window.localStorage.setItem("Browser_Name", this.browserName);
-    window.localStorage.setItem("Browser_Version", this.fullVersion);
-
-  }
-
 }
-
 window.customElements.define('user-details', UserDetails);
+
+// var $ = document.getElementById; //freedom from document.getElementById!
